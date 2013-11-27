@@ -13,7 +13,7 @@ module ActionController
 
     def initialize(param)
       @param = param
-      super("param is missing or the value is empty: #{param}")
+      super("Missing required parameter(s): #{params.join(", ")}")
     end
   end
 
@@ -22,7 +22,7 @@ module ActionController
 
     def initialize(params)
       @params = params
-      super("found unpermitted parameters: #{params.join(", ")}")
+      super("Found unpermitted parameter(s): #{params.join(", ")}")
     end
   end
 
@@ -52,7 +52,12 @@ module ActionController
     end
 
     def require(key)
-      self[key].presence || raise(ActionController::ParameterMissing.new(key))
+      case filter
+      when Symbol, String
+        self[key].presence || raise(ActionController::ParameterMissing.new(key))
+      when Hash then
+        self.values_for_key_path_tree(key).presence || raise(ActionController::ParameterMissing.new(key))
+      end
     end
 
     alias :required :require
@@ -96,6 +101,29 @@ module ActionController
         duplicate.instance_variable_set :@permitted, @permitted
       end
     end
+
+    def values_for_key_path_tree(tree={})
+      values = []
+      node.each_pair do |k, v|
+        case v
+          when String, Fixnum, Symbol then
+            return v.to_s
+          when Hash then
+            values << self.values_for_key_path_tree(v)
+          else raise ArgumentError, "An unsupported object type was submitted in a required params keypath: #{v.class}"
+        end
+        return values
+      end
+
+      return @all_values
+    end
+
+    #def dig(*path)
+    #  path.inject(self) do |location, key|
+    #    location.respond_to?(:keys) ? location[key] : nil
+    #  end
+    #end
+
 
     protected
       def convert_value(value)
