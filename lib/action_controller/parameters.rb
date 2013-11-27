@@ -34,7 +34,7 @@ module ActionController
 
     # Never raise an UnpermittedParameters exception because of these params
     # are present. They are added by Rails and it's of no concern.
-    NEVER_UNPERMITTED_PARAMS = %w( controller action )
+    NEVER_UNPERMITTED_PARAMS = %w( controller action format )
 
     def initialize(attributes = nil)
       super(attributes)
