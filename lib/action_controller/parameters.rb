@@ -51,12 +51,12 @@ module ActionController
       self
     end
 
-    def require(key)
-      case filter
+    def require(key_path)
+      case key_path
       when Symbol, String
-        self[key].presence || raise(ActionController::ParameterMissing.new(key))
+        self[key_path].presence || raise(ActionController::ParameterMissing.new(key_path))
       when Hash then
-        self.values_for_key_path_tree(key).presence || raise(ActionController::ParameterMissing.new(key))
+        self.values_for_key_path_tree(key_path).presence || raise(ActionController::ParameterMissing.new(key_path))
       end
     end
 
